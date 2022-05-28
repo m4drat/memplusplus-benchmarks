@@ -1,0 +1,3 @@
+[submodule "benchmarks/gcpp/gcpp"]
+	path = benchmarks/gcpp/gcpp
+	url = https://github.com/hsutter/gcpp

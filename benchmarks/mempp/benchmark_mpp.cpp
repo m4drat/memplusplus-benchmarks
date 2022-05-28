@@ -1,11 +1,11 @@
 #include "benchmark/benchmark.h"
-#include "mpplib/memory_allocator.hpp"
+#include "mpplib/memory_manager.hpp"
 
 
 static void MppBenchmarkAllocate(benchmark::State& state) {
     for (auto _ : state)
     {
-        benchmark::DoNotOptimize(mpp::MemoryAllocator::Allocate(128));
+        benchmark::DoNotOptimize(mpp::MemoryManager::Allocate(128));
     }
 }
 BENCHMARK(MppBenchmarkAllocate)->Unit(benchmark::kMillisecond);
