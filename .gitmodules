@@ -1,3 +1,18 @@
 [submodule "benchmarks/gcpp/gcpp"]
 	path = benchmarks/gcpp/gcpp
 	url = https://github.com/hsutter/gcpp
+[submodule "benchmarks/mempp/memplusplus"]
+	path = benchmarks/mempp/memplusplus
+	url = https://github.com/m4drat/memplusplus
+[submodule "libraries/benchmark"]
+	path = libraries/benchmark
+	url = https://github.com/google/benchmark
+[submodule "libraries/googletest"]
+	path = libraries/googletest
+	url = https://github.com/google/googletest
+[submodule "benchmarks/mimalloc/mimalloc"]
+	path = benchmarks/mimalloc/mimalloc
+	url = https://github.com/microsoft/mimalloc
+[submodule "benchmarks/rpmalloc/rpmalloc"]
+	path = benchmarks/rpmalloc/rpmalloc
+	url = https://github.com/mjansson/rpmalloc

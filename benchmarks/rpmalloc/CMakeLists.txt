@@ -1,23 +1,17 @@
-project(benchmark-mpp)
+project(benchmark-rpmalloc)
 
-set(MPP_BUILD_TESTS OFF)
-set(MPP_FULL_DEBUG OFF)
-set(MPP_SECURE OFF)
-set(MPP_PROFILE OFF)
-set(MPP_STATS OFF)
-set(MPP_BUILD_EXAMPLE OFF)
-set(MPP_BUILD_SHARED_LIBS OFF)
-add_subdirectory(memplusplus)
+include_directories(rpmalloc/rpmalloc)
 
 # Create benchmark executable
 add_executable(${PROJECT_NAME} 
     allocator_api_override.cpp
     ../benchmark_main.cpp
     ../benchmark_alloc_dealloc.cpp
+
+    rpmalloc/rpmalloc/rpmalloc.c
 )
 
 target_link_libraries(${PROJECT_NAME}
-    lib::mpp
     benchmark::benchmark
 )
 

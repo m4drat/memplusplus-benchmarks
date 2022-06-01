@@ -1,0 +1,5 @@
+add_subdirectory(gcpp)
+add_subdirectory(mempp)
+add_subdirectory(mimalloc)
+add_subdirectory(ptmalloc3)
+add_subdirectory(rpmalloc)
