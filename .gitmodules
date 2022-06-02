@@ -16,3 +16,6 @@
 [submodule "benchmarks/rpmalloc/rpmalloc"]
 	path = benchmarks/rpmalloc/rpmalloc
 	url = https://github.com/mjansson/rpmalloc
+[submodule "benchmarks/ptmalloc3/ptmalloc3"]
+	path = benchmarks/ptmalloc3/ptmalloc3
+	url = https://github.com/yeewang/ptmalloc3
