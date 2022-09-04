@@ -19,3 +19,6 @@
 [submodule "benchmarks/ptmalloc3/ptmalloc3"]
 	path = benchmarks/ptmalloc3/ptmalloc3
 	url = https://github.com/yeewang/ptmalloc3
+[submodule "benchmarks/jemalloc/jemalloc"]
+	path = benchmarks/jemalloc/jemalloc
+	url = https://github.com/jemalloc/jemalloc

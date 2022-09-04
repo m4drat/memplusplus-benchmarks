@@ -7,7 +7,7 @@ This repo provides a set of different benchmarks for [memplusplus](https://githu
 ### How to run
 
 1. Clone this repo: `git clone https://github.com/m4drat/memplusplus-benchmarks --recurse-submodules`
-2. Run all benchmarks `cd memplusplus-benchmarks && ./run_all.sh`
+2. Run all benchmarks `cd memplusplus-benchmarks && ./compile_all_and_run.sh.sh`
 
 ### Benchmarks description
 

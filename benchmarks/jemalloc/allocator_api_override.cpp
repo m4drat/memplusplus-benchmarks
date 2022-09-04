@@ -1,10 +1,10 @@
 #include "allocator_api_override.h"
-#include "mpplib/mpp.hpp"
+#include <jemalloc/jemalloc.h>
 
 void BenchmarkAllocatorInitialize()
 {
+    return;
 }
-
 void BenchmarkAllocatorFinalize()
 {
     return;
@@ -12,10 +12,10 @@ void BenchmarkAllocatorFinalize()
 
 void* BenchmarkAllocate(std::size_t t_size)
 {
-    return mpp::MM::Allocate(t_size);
+    return malloc(t_size);
 }
 
 void BenchmarkDeallocate(void* t_ptr)
 {
-    mpp::MM::Deallocate(t_ptr);
+    free(t_ptr);
 }

@@ -1,4 +1,5 @@
-add_subdirectory(gcpp)
+# add_subdirectory(gcpp)
+add_subdirectory(jemalloc)
 add_subdirectory(mempp)
 add_subdirectory(mimalloc)
 add_subdirectory(ptmalloc2)

@@ -2,19 +2,22 @@
 #include "rpmalloc.h"
 #include <cstdlib>
 
-void BenchmarkAllocatorInitialize() {
+void BenchmarkAllocatorInitialize()
+{
     rpmalloc_initialize();
 }
 
-void BenchmarkAllocatorFinalize() {
+void BenchmarkAllocatorFinalize()
+{
     rpmalloc_finalize();
 }
 
-
-void* BenchmarkAllocate(std::size_t t_size) {
+void* BenchmarkAllocate(std::size_t t_size)
+{
     return rpmalloc(t_size);
 }
 
-void BenchmarkDeallocate(void* t_ptr) {
+void BenchmarkDeallocate(void* t_ptr)
+{
     rpfree(t_ptr);
 }
