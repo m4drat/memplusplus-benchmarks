@@ -20,8 +20,9 @@ This repo provides a set of different benchmarks for [memplusplus](https://githu
 ### Targets
 
 - [x] gcpp
+- [x] jemalloc
 - [x] mempp
 - [x] mimalloc
-- [ ] ptmalloc2 - latest (glibc 2.35), currently uses `libc 2.31`
+- [?] ptmalloc2 - latest (glibc 2.35), currently uses `libc 2.31`
 - [x] ptmalloc3
 - [x] rpmalloc
