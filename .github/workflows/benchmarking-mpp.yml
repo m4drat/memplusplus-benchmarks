@@ -16,7 +16,7 @@ jobs:
 
       - name: use latest mem++
         run: |
-          git submodule update --remote ./benchmarks/mempp/memplusplus
+          git submodule update --init --remote ./benchmarks/mempp/memplusplus
 
       - name: configure_clang
         run: |
