@@ -5,9 +5,9 @@ include_directories(gcpp)
 include_directories(gcpp/submodules/gsl/include)
 
 # Create benchmark executable
-add_executable(${PROJECT_NAME} 
+add_executable(${PROJECT_NAME}
     allocator_api_override.cpp
-    ../benchmark_main.cpp
+    ${BENCHMARK_SOURCES}
 )
 
 target_link_libraries(${PROJECT_NAME}

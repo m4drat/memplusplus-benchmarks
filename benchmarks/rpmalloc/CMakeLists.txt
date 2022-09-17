@@ -3,12 +3,10 @@ project(benchmark-rpmalloc)
 include_directories(rpmalloc/rpmalloc)
 
 # Create benchmark executable
-add_executable(${PROJECT_NAME} 
-    allocator_api_override.cpp
-    ../benchmark_main.cpp
-    ../benchmark_alloc_dealloc.cpp
-
+add_executable(${PROJECT_NAME}
     rpmalloc/rpmalloc/rpmalloc.c
+    allocator_api_override.cpp
+    ${BENCHMARK_SOURCES}
 )
 
 target_link_libraries(${PROJECT_NAME}

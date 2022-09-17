@@ -1,4 +1,14 @@
 # add_subdirectory(gcpp)
+list(APPEND BENCHMARK_SOURCES
+    ../benchmark_alloc_dealloc.cpp
+
+    # ../benchmark_garbage_collection.cpp
+    # ../benchmark_memory_access.cpp
+    ../benchmark_main.cpp
+    ../benchmark_alloc.cpp
+    ../benchmark_dealloc.cpp
+    ../benchmark_alloc_dealloc.cpp
+    ../benchmark_utils.cpp)
 
 if(MPP_BENCH_ONLY_MEMPLUSPLUS MATCHES "ON")
     add_subdirectory(mempp)

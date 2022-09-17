@@ -10,10 +10,11 @@ set(MPP_BUILD_SHARED_LIBS OFF)
 add_subdirectory(memplusplus)
 
 # Create benchmark executable
-add_executable(${PROJECT_NAME} 
+add_executable(${PROJECT_NAME}
     allocator_api_override.cpp
-    ../benchmark_main.cpp
-    ../benchmark_alloc_dealloc.cpp
+    ${BENCHMARK_SOURCES}
+    benchmark_garbage_collection.cpp
+    benchmark_memory_access.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

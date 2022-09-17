@@ -3,8 +3,7 @@ project(benchmark-ptmalloc2)
 # Create benchmark executable
 add_executable(${PROJECT_NAME}
     allocator_api_override.cpp
-    ../benchmark_main.cpp
-    ../benchmark_alloc_dealloc.cpp
+    ${BENCHMARK_SOURCES}
 )
 
 target_link_libraries(${PROJECT_NAME}

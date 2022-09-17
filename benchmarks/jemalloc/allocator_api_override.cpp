@@ -5,6 +5,7 @@ void BenchmarkAllocatorInitialize()
 {
     return;
 }
+
 void BenchmarkAllocatorFinalize()
 {
     return;
