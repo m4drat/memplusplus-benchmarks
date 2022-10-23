@@ -12,3 +12,7 @@
 //     }
 // }
 // BENCHMARK(BM_AccessMemory)->RangeMultiplier(2)->Range(rangeStart, rangeEnd);
+
+// 1. Randomized accesses inside X separate subgraphs
+// 2. Randomized accesses inside randomly layouted linked list
+// 3. P2329R0: Move, Copy, and Locality at Scale

@@ -3,18 +3,30 @@
 #include "benchmark_constants.h"
 #include "benchmark_utils.h"
 
+#define BENCH_ALLOC_BLUEPRINT(sizes)                                                               \
+    do {                                                                                           \
+        state.PauseTiming();                                                                       \
+        bm::utils::XorshiftInit(1337);                                                             \
+        std::vector<void*> pointers;                                                               \
+        pointers.reserve(state.range(0));                                                          \
+        state.ResumeTiming();                                                                      \
+        for (uint32_t iter = 0; iter < state.range(0); ++iter) {                                   \
+            pointers.emplace_back(                                                                 \
+                BenchmarkAllocate(sizes[bm::utils::XorshiftNext() % sizes.size()]));               \
+        }                                                                                          \
+        state.PauseTiming();                                                                       \
+        for (auto ptr : pointers)                                                                  \
+            BenchmarkDeallocate(ptr);                                                              \
+        state.ResumeTiming();                                                                      \
+    } while (0)
+
 /**
  * @brief Benchmarks the allocation speed for many different small allocation requests.
  */
 static void BM_AllocateManySmallRandom(benchmark::State& state)
 {
     for (auto _ : state) {
-        // Somehow clear each allocator's state
-        for (uint32_t iter = 0; iter < state.range(0); ++iter) {
-            void* ptr =
-                BenchmarkAllocate(smallSizes[bm::utils::XorshiftNext() % smallSizes.size()]);
-            benchmark::DoNotOptimize(ptr);
-        }
+        BENCH_ALLOC_BLUEPRINT(g_smallSizes);
     }
 }
 BENCHMARK(BM_AllocateManySmallRandom)
@@ -27,12 +39,7 @@ BENCHMARK(BM_AllocateManySmallRandom)
 static void BM_AllocateManyMediumRandom(benchmark::State& state)
 {
     for (auto _ : state) {
-        // Somehow clear each allocator's state
-        for (uint32_t iter = 0; iter < state.range(0); ++iter) {
-            void* ptr =
-                BenchmarkAllocate(mediumSizes[bm::utils::XorshiftNext() % mediumSizes.size()]);
-            benchmark::DoNotOptimize(ptr);
-        }
+        BENCH_ALLOC_BLUEPRINT(g_mediumSizes);
     }
 }
 BENCHMARK(BM_AllocateManyMediumRandom)
@@ -45,10 +52,7 @@ BENCHMARK(BM_AllocateManyMediumRandom)
 static void BM_AllocateManyBigRandom(benchmark::State& state)
 {
     for (auto _ : state) {
-        for (uint32_t iter = 0; iter < state.range(0); ++iter) {
-            void* ptr = BenchmarkAllocate(bigSizes[bm::utils::XorshiftNext() % bigSizes.size()]);
-            benchmark::DoNotOptimize(ptr);
-        }
+        BENCH_ALLOC_BLUEPRINT(g_bigSizes);
     }
 }
 BENCHMARK(BM_AllocateManyBigRandom)
@@ -62,11 +66,7 @@ BENCHMARK(BM_AllocateManyBigRandom)
 static void BM_AllocateManyRandom(benchmark::State& state)
 {
     for (auto _ : state) {
-        for (uint32_t iter = 0; iter < state.range(0); ++iter) {
-            void* ptr =
-                BenchmarkAllocate(combinedSizes[bm::utils::XorshiftNext() % combinedSizes.size()]);
-            benchmark::DoNotOptimize(ptr);
-        }
+        BENCH_ALLOC_BLUEPRINT(g_combinedSizes);
     }
 }
 BENCHMARK(BM_AllocateManyRandom)
