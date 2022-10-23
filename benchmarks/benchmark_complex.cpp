@@ -11,6 +11,7 @@
 class Worker
 {
 public:
+    //! @brief Enum with all possible allocation sizes.
     enum class Sizes
     {
         SMALL = 0,
@@ -21,6 +22,7 @@ public:
         INVALID
     };
 
+    //! @brief Enum with all possible operations.
     enum class Operation
     {
         ALLOC_SINGLE = 0,
@@ -31,13 +33,14 @@ public:
         INVALID
     };
 
-    enum class AllocManyOpArg
-    {
-        ALLOC_MANY_RANDOM_SIZES = 0,
-        ALLOC_MANY_CONSTANT_SIZES,
-        COUNT
-    };
-
+    /**
+     * @brief Construct a new Worker object
+     * @param t_bmState The benchmark state
+     * @param t_totalOps The total number of loop iterations to perform
+     * @param t_transitionMatrix The transition matrix
+     * @param t_maxMemoryConsumption Maximum allowed memory consumption (in bytes)
+     * @param t_xorshiftSeed The seed for the xorshift random number generator
+     */
     Worker(benchmark::State& t_bmState,
            uint32_t t_totalOps = 1024 * 128,
            std::array<std::array<float, 4>, 4> t_transitionMatrix = m_defaultTransitionMatrix,
@@ -49,13 +52,18 @@ public:
         , m_maxMemoryConsumption(t_maxMemoryConsumption)
         , m_transitionMatrix(t_transitionMatrix)
     {
-        m_transitionsState = bm::utils::XorshiftNext(t_xorshiftSeed);
-        m_sizesState = bm::utils::XorshiftNext(t_xorshiftSeed);
+        m_transitionsRngState = bm::utils::XorshiftNext(t_xorshiftSeed);
+        m_sizesRngState = bm::utils::XorshiftNext(t_xorshiftSeed);
 
         CheckTransitionMatrix();
         CalculateScatters();
     }
 
+    /**
+     * @brief Runs the benchmark.
+     * @return std::tuple<uint32_t, uint32_t, uint32_t, int32_t> - total number of iterations,
+     * number of allocations, number of deallocations, max number of active pointers.
+     */
     std::tuple<uint32_t, uint32_t, uint32_t, int32_t> RunBenchmark()
     {
         m_bmState.PauseTiming();
@@ -71,8 +79,8 @@ public:
                 case Operation::ALLOC_MANY:
                     // std::cout << m_ops << ". Alloc many" << std::endl;
                     AllocMany(NextMultipleAllocationsCount(),
-                              (bm::utils::XorshiftNext(m_sizesState, 0.0f, 1.0f) > 0.8) ? true
-                                                                                        : false);
+                              (bm::utils::XorshiftNext(m_sizesRngState, 0.0f, 1.0f) > 0.8) ? true
+                                                                                           : false);
                     break;
                 case Operation::DEALLOC_SINGLE:
                     // std::cout << m_ops << ". Dealloc single" << std::endl;
@@ -101,33 +109,59 @@ public:
     }
 
 private:
+    //! @brief Vector of pointers to allocated memory
     std::vector<void*> m_activePtrs;
+
+    //! @brief Total operations to perform
     uint32_t m_totalOps;
 
+    //! @brief Number of alloc operations performed
     uint32_t m_allocOps = 0;
+
+    //! @brief Number of free operations performed
     uint32_t m_freeOps = 0;
+
+    //! @brief Number of switch-cases executed
     uint32_t m_ops = 0;
+
+    //! @brief Maximum number of active pointers
     int32_t m_maxActivePtrs = std::numeric_limits<int32_t>::min();
+
+    //! @brief Current number of active pointers
     int32_t m_currActivePtrs = 0;
 
+    //! @brief Maximum allowed memory consumption
     int64_t m_maxMemoryConsumption;
+    //! @brief Current memory consumption
     int64_t m_totalAllocated = 0;
 
+    //! @brief Alloc scatter factor
     uint32_t m_allocScatter;
+    //! @brief Free scatter factor
     uint32_t m_freeScatter;
 
-    uint64_t m_transitionsState;
-    uint64_t m_sizesState;
+    //! @brief Random number generator state for transitions
+    uint64_t m_transitionsRngState;
+    //! @brief Random number generator state for sizes generation
+    uint64_t m_sizesRngState;
 
+    //! @brief Next pointer index inside m_activePtrs to free
     uint32_t m_freeIdx = 0;
+    //! @brief Index inside m_activePtrs where to save newly allocated chunk
     uint32_t m_allocIdx = 0;
+    //! @brief Index inside g_NumAllocOps to get number of sequential allocations to perform
     uint64_t m_allocOpsIdx = 0;
+    //! @brief Index inside g_NumAllocOps to get number of sequential deallocations to perform
     uint64_t m_freeOpsIdx = 0;
 
+    //! @brief Google benchmark state
     benchmark::State& m_bmState;
 
+    //! @brief Current statemachine state
     Operation m_currentOp = Operation::ALLOC_SINGLE;
+    //! @brief Transition matrix with probabilities of switching to another state
     std::array<std::array<float, 4>, 4> m_transitionMatrix;
+    //! @brief Default transition matrix
     static constexpr std::array<std::array<float, 4>, 4> m_defaultTransitionMatrix{
         std::array<float, 4>{ 0.15, 0.0, 0.0, 0.85 },   // AllocateSingle
         std::array<float, 4>{ 0.65, 0.0, 0.35, 0.0 },   // DeallocateSingle
@@ -135,6 +169,7 @@ private:
         std::array<float, 4>{ 0.07, 0.00, 0.93, 0.00 }, // DeallocateMultiple
     };
 
+    //! @brief Checks if transition matrix is valid
     void CheckTransitionMatrix()
     {
         for (auto& row : m_transitionMatrix) {
@@ -149,10 +184,11 @@ private:
         }
     }
 
+    //! @brief Performs transition to another state
     Operation GetNextOperation()
     {
         auto& row = m_transitionMatrix[static_cast<uint32_t>(m_currentOp)];
-        auto rand = bm::utils::XorshiftNext(m_transitionsState, 0.0f, 1.0f);
+        auto rand = bm::utils::XorshiftNext(m_transitionsRngState, 0.0f, 1.0f);
         float sum = 0.0f;
         for (uint32_t i = 0; i < row.size(); ++i) {
             sum += row[i];
@@ -165,6 +201,7 @@ private:
         return Operation::INVALID;
     }
 
+    //! @brief Calculates alloc and free scatter factors
     void CalculateScatters()
     {
         uint32_t primeIdx = 0;
@@ -177,10 +214,17 @@ private:
             m_freeScatter = g_Primes[++primeIdx];
     }
 
+    /**
+     * @brief Gets random size for allocation. If no argument is passed, size is generated randomly.
+     * With probability of 0.7 size is generated from g_smallSizes, with probability of 0.2 size is
+     * generated from g_mediumSizes, with probability of 0.1 size is generated from g_bigSizes.
+     * @param bucket Bucket to get size from. @sa Sizes
+     * @return int64_t Random size
+     */
     int64_t GetRandomSize(Sizes bucket = Sizes::INVALID)
     {
         if (bucket == Sizes::INVALID) {
-            auto rand = bm::utils::XorshiftNext(m_sizesState, 0.0f, 1.0f);
+            auto rand = bm::utils::XorshiftNext(m_sizesRngState, 0.0f, 1.0f);
             if (rand < 0.7f)
                 bucket = Sizes::SMALL;
             else if (rand < 0.9f)
@@ -192,32 +236,39 @@ private:
         switch (bucket) {
             case Sizes::SMALL:
                 return g_smallSizes[bm::utils::XorshiftNext(
-                    m_sizesState, 0, g_smallSizes.size() - 1)];
+                    m_sizesRngState, 0, g_smallSizes.size() - 1)];
             case Sizes::MEDIUM:
                 return g_mediumSizes[bm::utils::XorshiftNext(
-                    m_sizesState, 0, g_mediumSizes.size() - 1)];
+                    m_sizesRngState, 0, g_mediumSizes.size() - 1)];
             case Sizes::BIG:
-                return g_bigSizes[bm::utils::XorshiftNext(m_sizesState, 0, g_bigSizes.size() - 1)];
+                return g_bigSizes[bm::utils::XorshiftNext(
+                    m_sizesRngState, 0, g_bigSizes.size() - 1)];
             case Sizes::COMBINED:
                 return g_combinedSizes[bm::utils::XorshiftNext(
-                    m_sizesState, 0, g_combinedSizes.size() - 1)];
+                    m_sizesRngState, 0, g_combinedSizes.size() - 1)];
             default:
                 return 0;
         }
     }
 
+    //! @brief Next number of sequential allocations to perform
     uint8_t NextMultipleAllocationsCount()
     {
         m_allocOpsIdx = (m_allocOpsIdx + m_allocScatter) % g_NumAllocOps.size();
         return m_allocOpsIdx;
     }
 
+    //! @brief Next number of sequential deallocations to perform
     uint8_t NextMultipleDellocationsCount()
     {
         m_freeOpsIdx = (m_freeOpsIdx + m_freeScatter) % g_NumFreeOps.size();
         return m_freeOpsIdx;
     }
 
+    /**
+     * @brief Allocates single chunk.
+     * @param t_size Size of chunk to allocate
+     */
     inline void AllocSingle(int64_t t_size)
     {
         if (m_totalAllocated >= m_maxMemoryConsumption)
@@ -247,13 +298,19 @@ private:
             m_maxActivePtrs = m_currActivePtrs;
     }
 
-    inline void AllocMany(int32_t t_total, bool t_randomSizes = true)
+    /**
+     * @brief Allocates multiple chunks.
+     * @param t_totalChunks Total number of chunks to allocate.
+     * @param t_randomSizes If true, sizes are generated per-chunk randomly.
+     * Otherwise, all chunks are of the same size.
+     */
+    inline void AllocMany(int32_t t_totalChunks, bool t_randomSizes = true)
     {
         if (m_totalAllocated >= m_maxMemoryConsumption)
             return;
 
         // std::cout << "AllocMany(" << t_total << ", " << t_randomSizes << ")" << std::endl;
-        for (uint32_t i = 0; i < t_total; i++) {
+        for (uint32_t i = 0; i < t_totalChunks; i++) {
             int32_t randomSize = GetRandomSize();
             if (t_randomSizes)
                 randomSize = GetRandomSize();
@@ -262,6 +319,7 @@ private:
         }
     }
 
+    //! @brief Frees single chunk.
     inline void FreeSingle()
     {
         if (m_activePtrs[m_freeIdx]) {
@@ -277,6 +335,10 @@ private:
         m_freeIdx = (m_freeIdx + m_freeScatter) % m_activePtrs.size();
     }
 
+    /**
+     * @brief Frees multiple chunks.
+     * @param t_total Total number of chunks to free.
+     */
     inline void FreeMany(int32_t t_total)
     {
         for (uint32_t i = 0; i < t_total; i++) {
@@ -286,7 +348,8 @@ private:
 };
 
 /**
- * @brief Benchmarks the allocation speed for many different small allocation requests.
+ * @brief Benchmarks the performance of the allocator by performing random (but similar to real
+ * program) sequences of  allocations and deallocations
  */
 template<class... Args>
 static void BM_Complex(benchmark::State& state, Args&&... args)
@@ -342,7 +405,6 @@ BENCHMARK_MAT1(600'000);
 BENCHMARK_MAT1(800'000);
 BENCHMARK_MAT1(1'000'000);
 BENCHMARK_MAT1(1'200'000);
-BENCHMARK_MAT1(1'400'000);
 BENCHMARK_MAT1(1'400'000);
 BENCHMARK_MAT1(1'600'000);
 BENCHMARK_MAT1(1'800'000);

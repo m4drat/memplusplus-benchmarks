@@ -1,17 +1,17 @@
 #include <array>
 #include <cstdint>
 
-constexpr uint32_t g_totalAllocOpsRangeStart{ 8 };
+constexpr uint32_t g_totalAllocOpsRangeStart{ 64 };
 constexpr uint32_t g_totalAllocOpsRangeEndSmall{ 32 << 10 };
 constexpr uint32_t g_totalAllocOpsRangeEndMedium{ 16 << 10 };
 constexpr uint32_t g_totalAllocOpsRangeEndBig{ 1 << 10 };
-constexpr uint32_t g_totalAllocOpsRangeEndCombined{ 4 << 10 };
+constexpr uint32_t g_totalAllocOpsRangeEndCombined{ 4 << 11 };
 
-constexpr uint32_t g_totalDeallocOpsRangeStart{ 8 };
-constexpr uint32_t g_totalDeallocOpsRangeEnd{ 64 << 10 };
+constexpr uint32_t g_totalDeallocOpsRangeStart{ 64 };
+constexpr uint32_t g_totalDeallocOpsRangeEnd{ 4 << 11 };
 
-constexpr uint32_t g_totalOpsRangeStart{ 8 };
-constexpr uint32_t g_totalOpsRangeEnd{ 64 << 10 };
+constexpr uint32_t g_totalOpsRangeStart{ 64 };
+constexpr uint32_t g_totalOpsRangeEnd{ 4 << 11 };
 
 static constexpr std::array<int32_t, 256> g_Primes = { 7,   11,  13,  17,  19,  23,  29,  31,  37,
                                                        41,  43,  47,  53,  59,  61,  67,  71,  73,
