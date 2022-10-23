@@ -11,9 +11,9 @@ This repo provides a set of different benchmarks for [memplusplus](https://githu
 
 ### Benchmarks description
 
-1. Sequence of allocations
-2. Sequence of allocations and deallocations
-3. Sequence of deallocations
+1. `benchmark_alloc.cpp` - Sequence of allocations from the same size bucket
+2. `benchmark_alloc_dealloc.cpp` - Allocations and immediate deallocations
+3. `benchmark_dealloc.cpp` - Sequence of chunks deallocations from the same size bucket
 4. Data access speed before compacting/layouting (based on P2329-move_at_scale)
 5. Data access speed after compacting/layouting (based on P2329-move_at_scale)
 
