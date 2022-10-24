@@ -4,11 +4,15 @@ CXX=/usr/bin/clang++-15 CC=/usr/bin/clang-15 cmake --build build --target all --
 
 # Benchmarks default allocation/deallocation speed
 # ./build/benchmarks/gcpp/benchmark-gcpp
-./build/benchmarks/jemalloc/benchmark-jemalloc
-./build/benchmarks/mempp/benchmark-mpp
-./build/benchmarks/ptmalloc2/benchmark-ptmalloc2
-./build/benchmarks/ptmalloc3/benchmark-ptmalloc3
-./build/benchmarks/rpmalloc/benchmark-rpmalloc
-./build/benchmarks/mimalloc/benchmark-mimalloc
 
-# Benchmark elements access before layouting and after
+curr_date=$(date -u +"%Y-%m-%dT-%H_%M_%SZ")
+
+mkdir -p ./bench-results/$curr_date
+
+./build/benchmarks/jemalloc/benchmark-jemalloc --benchmark_out_format=json --benchmark_out="./bench-results/$curr_date/jemalloc.json" --benchmark_repetitions=5 
+./build/benchmarks/mempp/benchmark-mpp --benchmark_out_format=json --benchmark_out="./bench-results/$curr_date/mpp.json" --benchmark_repetitions=5
+./build/benchmarks/ptmalloc2/benchmark-ptmalloc2 --benchmark_out_format=json --benchmark_out="./bench-results/$curr_date/ptmalloc2.json" --benchmark_repetitions=5
+./build/benchmarks/ptmalloc3/benchmark-ptmalloc3 --benchmark_out_format=json --benchmark_out="./bench-results/$curr_date/ptmalloc3.json" --benchmark_repetitions=5
+./build/benchmarks/rpmalloc/benchmark-rpmalloc --benchmark_out_format=json --benchmark_out="./bench-results/$curr_date/rpmalloc.json" --benchmark_repetitions=5
+./build/benchmarks/mimalloc/benchmark-mimalloc --benchmark_out_format=json --benchmark_out="./bench-results/$curr_date/mimalloc.json" --benchmark_repetitions=5
+
