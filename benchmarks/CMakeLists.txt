@@ -4,6 +4,7 @@ list(APPEND BENCHMARK_SOURCES
     # ../benchmark_garbage_collection.cpp
     # ../benchmark_memory_access.cpp
     ../benchmark_main.cpp
+
     ../benchmark_alloc.cpp
     ../benchmark_dealloc.cpp
     ../benchmark_alloc_dealloc.cpp

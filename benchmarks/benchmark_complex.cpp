@@ -2,11 +2,48 @@
 #include "benchmark/benchmark.h"
 #include "benchmark_constants.h"
 #include "benchmark_utils.h"
+#include "mpplib/mpp.hpp"
 
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <limits>
+#include <memory>
+
+// namespace {
+//     struct BenchMemoryManager : public benchmark::MemoryManager
+//     {
+//         size_t cur_num_allocs = 0;
+//         size_t cur_num_deallocs = 0;
+//         size_t cur_max_bytes_used = 0;
+
+//         void Start() override
+//         {
+//             cur_num_allocs = 0;
+//             cur_num_deallocs = 0;
+//             cur_max_bytes_used = 0;
+//         }
+
+//         void Stop(Result* result) override
+//         {
+//             result->num_allocs = cur_num_allocs;
+//             result->max_bytes_used = cur_max_bytes_used;
+//         }
+//     };
+
+//     static auto s_memMgr = std::unique_ptr<BenchMemoryManager>(new BenchMemoryManager());
+//     static struct InstrumentationRegistrer
+//     {
+//         InstrumentationRegistrer()
+//         {
+//             benchmark::RegisterMemoryManager(s_memMgr.get());
+//         }
+//         ~InstrumentationRegistrer()
+//         {
+//             benchmark::RegisterMemoryManager(nullptr);
+//         }
+//     } __mem_mgr_register;
+// }
 
 class Worker
 {
@@ -358,6 +395,20 @@ static void BM_Complex(benchmark::State& state, Args&&... args)
     auto totalOps = std::get<0>(argsTuple);
     auto transitionMatrix = std::get<1>(argsTuple);
 
+    // static std::function<void*(std::size_t)> allocHook = [&](std::size_t t_AllocSize) {
+    //     if (s_memMgr) {
+    //         s_memMgr->cur_num_allocs++;
+    //         s_memMgr->cur_max_bytes_used += t_AllocSize;
+    //     }
+
+    //     mpp::MM::SetAllocateHook(nullptr);
+    //     void* ptr = mpp::MM::Allocate(t_AllocSize);
+    //     mpp::MM::SetAllocateHook(allocHook);
+    //     return ptr;
+    // };
+
+    // mpp::MM::SetAllocateHook(allocHook);
+
     for (auto _ : state) {
         state.PauseTiming();
         Worker worker(state, totalOps, transitionMatrix);
@@ -367,10 +418,12 @@ static void BM_Complex(benchmark::State& state, Args&&... args)
 
         state.PauseTiming();
         worker.CleanUp();
-        state.counters["TotalOperations"] = std::get<0>(result);
+        state.counters["TotalControlLoopIterations"] = std::get<0>(result);
         state.counters["TotalAllocOperations"] = std::get<1>(result);
         state.counters["TotalFreeOperations"] = std::get<2>(result);
         state.counters["MaxActivePtrs"] = std::get<3>(result);
+        // state.counters["MaxBytesUsed"] = s_memMgr->cur_max_bytes_used;
+        // state.counters["TotalAllocationRequests"] = s_memMgr->cur_num_allocs;
         state.ResumeTiming();
     }
 }
@@ -385,7 +438,8 @@ static void BM_Complex(benchmark::State& state, Args&&... args)
                           std::array<float, 4>{ 0.1, 0.4, 0.1, 0.4 },   /* AllocateMultiple */     \
                           std::array<float, 4>{ 0.5, 0.05, 0.4, 0.05 }, /* DeallocateMultiple */   \
                       })                                                                           \
-        ->Unit(benchmark::kMillisecond);
+        ->Unit(benchmark::kMillisecond)                                                            \
+        ->Iterations(5);
 
 #define BENCHMARK_MAT2(iters)                                                                      \
     BENCHMARK_CAPTURE(BM_Complex,                                                                  \
@@ -397,7 +451,8 @@ static void BM_Complex(benchmark::State& state, Args&&... args)
                           std::array<float, 4>{ 0.0, 0.82, 0.0, 0.18 },   /* AllocateMultiple */   \
                           std::array<float, 4>{ 0.07, 0.00, 0.93, 0.00 }, /* DeallocateMultiple */ \
                       })                                                                           \
-        ->Unit(benchmark::kMillisecond);
+        ->Unit(benchmark::kMillisecond)                                                            \
+        ->Iterations(5);
 
 BENCHMARK_MAT1(200'000);
 BENCHMARK_MAT1(400'000);

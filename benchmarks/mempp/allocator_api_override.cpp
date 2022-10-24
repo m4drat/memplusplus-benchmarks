@@ -2,8 +2,7 @@
 #include "mpplib/mpp.hpp"
 
 void BenchmarkAllocatorInitialize()
-{
-}
+{}
 
 void BenchmarkAllocatorFinalize()
 {
