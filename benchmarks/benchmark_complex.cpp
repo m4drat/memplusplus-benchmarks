@@ -67,8 +67,6 @@ public:
      */
     std::tuple<uint32_t, uint32_t, uint32_t, int32_t> RunBenchmark()
     {
-        m_bmState.PauseTiming();
-
         while (m_allocOps + m_freeOps <= m_totalOps) {
             ++m_ops;
             auto op = GetNextOperation();
@@ -362,8 +360,6 @@ static void BM_Complex(benchmark::State& state, Args&&... args)
     for (auto _ : state) {
         state.PauseTiming();
         Worker worker(state, totalOps, transitionMatrix);
-        state.ResumeTiming();
-
         auto result = worker.RunBenchmark();
 
         state.PauseTiming();
