@@ -38,4 +38,11 @@ namespace bm::utils {
                    (t_max - t_min) +
                t_min;
     }
+
+    std::size_t GetProcPeakMemoryUsage()
+    {
+        struct rusage rusage;
+        getrusage(RUSAGE_SELF, &rusage);
+        return (std::size_t)rusage.ru_maxrss * 1024;
+    }
 }

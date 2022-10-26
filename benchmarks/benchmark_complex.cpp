@@ -8,6 +8,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <tuple>
 
 class Worker
 {
@@ -136,6 +137,7 @@ private:
 
     //! @brief Alloc scatter factor
     uint32_t m_allocScatter;
+
     //! @brief Free scatter factor
     uint32_t m_freeScatter;
 
@@ -158,8 +160,10 @@ private:
 
     //! @brief Current statemachine state
     Operation m_currentOp = Operation::ALLOC_SINGLE;
+
     //! @brief Transition matrix with probabilities of switching to another state
     std::array<std::array<float, 4>, 4> m_transitionMatrix;
+
     //! @brief Default transition matrix
     static constexpr std::array<std::array<float, 4>, 4> m_defaultTransitionMatrix{
         std::array<float, 4>{ 0.15, 0.0, 0.0, 0.85 },   // AllocateSingle
@@ -273,8 +277,6 @@ private:
         if (m_totalAllocated >= m_maxMemoryConsumption)
             return;
 
-        m_bmState.ResumeTiming();
-
         if (m_activePtrs[m_allocIdx]) {
             m_totalAllocated -= *static_cast<int64_t*>(m_activePtrs[m_allocIdx]);
             BenchmarkDeallocate(m_activePtrs[m_allocIdx]);
@@ -284,8 +286,16 @@ private:
         }
 
         m_activePtrs[m_allocIdx] = BenchmarkAllocate(t_size);
-        m_bmState.PauseTiming();
         *static_cast<int64_t*>(m_activePtrs[m_allocIdx]) = t_size;
+
+        // Make sure to write to each page to commit it for measuring memory usage
+        if (t_size) {
+            constexpr std::size_t c_pageSize = 4096;
+            std::size_t num_pages = (t_size - 1) / c_pageSize;
+            for (std::size_t page = 1; page < num_pages; ++page)
+                *((char*)(m_activePtrs[m_allocIdx]) + (page * c_pageSize)) = 1;
+            *((char*)(m_activePtrs[m_allocIdx]) + (t_size - 1)) = 1;
+        }
 
         m_allocIdx = (m_allocIdx + m_allocScatter) % m_activePtrs.size();
         m_totalAllocated += t_size;
@@ -323,9 +333,7 @@ private:
     {
         if (m_activePtrs[m_freeIdx]) {
             m_totalAllocated -= *static_cast<int64_t*>(m_activePtrs[m_freeIdx]);
-            m_bmState.ResumeTiming();
             BenchmarkDeallocate(m_activePtrs[m_freeIdx]);
-            m_bmState.PauseTiming();
             m_activePtrs[m_freeIdx] = nullptr;
             ++m_freeOps;
             --m_currActivePtrs;
@@ -357,19 +365,18 @@ static void BM_Complex(benchmark::State& state, Args&&... args)
     auto totalOps = std::get<0>(argsTuple);
     auto transitionMatrix = std::get<1>(argsTuple);
 
+    std::tuple<uint32_t, uint32_t, uint32_t, uint32_t> result;
     for (auto _ : state) {
-        state.PauseTiming();
         Worker worker(state, totalOps, transitionMatrix);
-        auto result = worker.RunBenchmark();
-
-        state.PauseTiming();
+        result = worker.RunBenchmark();
         worker.CleanUp();
-        state.counters["TotalControlLoopIterations"] = std::get<0>(result);
-        state.counters["TotalAllocOperations"] = std::get<1>(result);
-        state.counters["TotalFreeOperations"] = std::get<2>(result);
-        state.counters["MaxActivePtrs"] = std::get<3>(result);
-        state.ResumeTiming();
     }
+
+    state.counters["TotalControlLoopIterations"] = std::get<0>(result);
+    state.counters["TotalAllocOperations"] = std::get<1>(result);
+    state.counters["TotalFreeOperations"] = std::get<2>(result);
+    state.counters["MaxActivePtrs"] = std::get<3>(result);
+    state.counters["PeakMemoryUsage"] = bm::utils::GetProcPeakMemoryUsage();
 }
 
 #define BENCHMARK_MAT1(iters)                                                                      \

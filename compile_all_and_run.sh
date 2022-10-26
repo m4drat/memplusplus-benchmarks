@@ -15,4 +15,3 @@ mkdir -p ./bench-results/$curr_date
 ./build/benchmarks/ptmalloc3/benchmark-ptmalloc3 --benchmark_out_format=json --benchmark_out="./bench-results/$curr_date/ptmalloc3.json" --benchmark_repetitions=5
 ./build/benchmarks/rpmalloc/benchmark-rpmalloc --benchmark_out_format=json --benchmark_out="./bench-results/$curr_date/rpmalloc.json" --benchmark_repetitions=5
 ./build/benchmarks/mimalloc/benchmark-mimalloc --benchmark_out_format=json --benchmark_out="./bench-results/$curr_date/mimalloc.json" --benchmark_repetitions=5
-
