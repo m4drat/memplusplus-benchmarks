@@ -2,6 +2,7 @@
 #include "benchmark/benchmark.h"
 #include "benchmark_constants.h"
 #include "benchmark_utils.h"
+#include "mpplib/memory_manager.hpp"
 #include "mpplib/mpp.hpp"
 
 #include <algorithm>
@@ -26,6 +27,10 @@ public:
         } else {
             m_LinkedListHead = CreateLayoutedLinkedList(t_LinkedListSize);
         }
+
+        if constexpr (DoLayout) {
+            GC::GetInstance().Collect();
+        }
     }
 
     Worker(const Worker&) = delete;
@@ -34,16 +39,17 @@ public:
     Worker& operator=(Worker&&) = delete;
     ~Worker() = default;
 
+    void DoCleanup()
+    {
+        m_LinkedListHead = nullptr;
+    }
+
     uint32_t DoBenchmark()
     {
         auto current = m_LinkedListHead;
 
-        if constexpr (DoLayout) {
-            // Do heap layout (call GC::Collect())
-        }
-
         while (current->next != nullptr) {
-            current->data ^= 0x1337AF12;
+            current->data = current->data ^ current->next->data ^ 0x1337AF12;
             current = current->next;
         }
 
@@ -111,9 +117,12 @@ private:
     {                                                                                              \
         for (auto _ : state) {                                                                     \
             state.PauseTiming();                                                                   \
+            mpp::MM::ResetAllocatorState();                                                        \
             Worker<RANDOMIZED_LINKED_LIST, DO_LAYOUT> worker(state, state.range(0));               \
             state.ResumeTiming();                                                                  \
-            benchmark::DoNotOptimize(worker.DoBenchmark());                                        \
+            uint32_t tmp = worker.DoBenchmark();                                                   \
+            benchmark::DoNotOptimize(tmp);                                                         \
+            benchmark::ClobberMemory();                                                            \
         }                                                                                          \
     }                                                                                              \
     BENCHMARK(BM_NAME)                                                                             \
