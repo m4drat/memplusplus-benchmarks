@@ -14,7 +14,7 @@ constexpr uint32_t g_totalOpsRangeStart{ 64 };
 constexpr uint32_t g_totalOpsRangeEnd{ 4 << 11 };
 
 constexpr uint32_t g_accessMemoryRangeStart{ 64 };
-constexpr uint32_t g_accessMemoryRangeEnd{ 2 << 10 };
+constexpr uint32_t g_accessMemoryRangeEnd{ 2 << 15 };
 
 static constexpr std::array<int32_t, 256> g_Primes = { 7,   11,  13,  17,  19,  23,  29,  31,  37,
                                                        41,  43,  47,  53,  59,  61,  67,  71,  73,

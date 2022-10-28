@@ -4,8 +4,10 @@
 #include "benchmark_utils.h"
 #include "mpplib/memory_manager.hpp"
 #include "mpplib/mpp.hpp"
+#include "mpplib/shared_gcptr.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cstdlib>
 #include <random>
 
@@ -46,14 +48,23 @@ public:
 
     uint32_t DoBenchmark()
     {
-        auto current = m_LinkedListHead;
+        // SharedGcPtr<ListNode> current = m_LinkedListHead;
 
-        while (current->next != nullptr) {
-            current->data = current->data ^ current->next->data ^ 0x1337AF12;
-            current = current->next;
+        // while (current->next != nullptr) {
+        //     current->data = current->data ^ 0x1337AF12 ^ current->next->data;
+        //     current = current->next;
+        // }
+
+        // return current->data;
+
+        SharedGcPtr<ListNode>* current = &m_LinkedListHead;
+
+        while (current->Get()->next.Get() != nullptr) {
+            current->Get()->data = current->Get()->data ^ 0x1337AF12 ^ current->Get()->next->data;
+            current = &current->Get()->next;
         }
 
-        return current->data;
+        return current->Get()->data;
     }
 
 private:
@@ -101,8 +112,7 @@ private:
             nodes.emplace_back(MakeShared<ListNode>(i, data));
         }
 
-        std::shuffle(
-            std::begin(nodes), std::end(nodes), std::default_random_engine(m_xorshiftSeed));
+        std::shuffle(std::begin(nodes), std::end(nodes), std::minstd_rand(m_xorshiftSeed));
 
         for (uint32_t i = 0; i < size - 1; ++i) {
             nodes[i]->next = nodes[i + 1];
@@ -115,20 +125,22 @@ private:
 #define BENCHMARK_MEM_ACCESS(BM_NAME, RANDOMIZED_LINKED_LIST, DO_LAYOUT)                           \
     static void BM_NAME(benchmark::State& state)                                                   \
     {                                                                                              \
+        Worker<RANDOMIZED_LINKED_LIST, DO_LAYOUT> worker(state, state.range(0));                   \
         for (auto _ : state) {                                                                     \
-            state.PauseTiming();                                                                   \
-            mpp::MM::ResetAllocatorState();                                                        \
-            Worker<RANDOMIZED_LINKED_LIST, DO_LAYOUT> worker(state, state.range(0));               \
-            state.ResumeTiming();                                                                  \
+            auto start = std::chrono::high_resolution_clock::now();                                \
             uint32_t tmp = worker.DoBenchmark();                                                   \
             benchmark::DoNotOptimize(tmp);                                                         \
-            benchmark::ClobberMemory();                                                            \
+            auto end = std::chrono::high_resolution_clock::now();                                  \
+            auto duration =                                                                        \
+                std::chrono::duration_cast<std::chrono::duration<double>>(end - start);            \
+            state.SetIterationTime(duration.count());                                              \
         }                                                                                          \
     }                                                                                              \
     BENCHMARK(BM_NAME)                                                                             \
         ->RangeMultiplier(2)                                                                       \
         ->Range(g_accessMemoryRangeStart, g_accessMemoryRangeEnd)                                  \
-        ->Unit(benchmark::kMicrosecond);
+        ->Unit(benchmark::kMicrosecond)                                                            \
+        ->UseManualTime()
 
 BENCHMARK_MEM_ACCESS(BM_AccessMemoryDefaultLinkedList, false, false);
 BENCHMARK_MEM_ACCESS(BM_AccessMemoryRandomizedLinkedList, true, false);
