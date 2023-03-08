@@ -11,10 +11,10 @@ void BenchmarkAllocatorFinalize()
 
 void* BenchmarkAllocate(std::size_t t_size)
 {
-    return mpp::MM::Allocate(t_size);
+    return mpp::Allocate(t_size);
 }
 
 void BenchmarkDeallocate(void* t_ptr)
 {
-    mpp::MM::Deallocate(t_ptr);
+    mpp::Deallocate(t_ptr);
 }
