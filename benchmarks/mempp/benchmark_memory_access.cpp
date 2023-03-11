@@ -31,7 +31,7 @@ public:
         }
 
         if constexpr (DoLayout) {
-            GC::GetInstance().Collect();
+            CollectGarbage();
         }
     }
 
