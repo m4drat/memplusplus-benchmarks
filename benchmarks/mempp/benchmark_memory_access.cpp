@@ -48,7 +48,7 @@ public:
 
     uint32_t DoBenchmark()
     {
-        // SharedGcPtr<ListNode> current = m_LinkedListHead;
+        // SharedGcPtr<ListNode>& current = m_LinkedListHead;
 
         // while (current->next != nullptr) {
         //     current->data = current->data ^ 0x1337AF12 ^ current->next->data;
@@ -125,6 +125,7 @@ private:
 #define BENCHMARK_MEM_ACCESS(BM_NAME, RANDOMIZED_LINKED_LIST, DO_LAYOUT)                           \
     static void BM_NAME(benchmark::State& state)                                                   \
     {                                                                                              \
+        mpp::g_memoryManager = std::make_unique<mpp::MemoryManager>();                             \
         Worker<RANDOMIZED_LINKED_LIST, DO_LAYOUT> worker(state, state.range(0));                   \
         for (auto _ : state) {                                                                     \
             auto start = std::chrono::high_resolution_clock::now();                                \
