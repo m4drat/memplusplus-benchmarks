@@ -13,7 +13,7 @@ add_subdirectory(memplusplus)
 add_executable(${PROJECT_NAME}
     allocator_api_override.cpp
     ${BENCHMARK_SOURCES}
-    benchmark_garbage_collection.cpp
+    benchmark_complex_gc.cpp
     benchmark_memory_access.cpp
 )
 

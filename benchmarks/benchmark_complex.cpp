@@ -45,7 +45,7 @@ public:
      */
     Worker(benchmark::State& t_bmState,
            uint32_t t_totalOps = 1024 * 128,
-           std::array<std::array<float, 4>, 4> t_transitionMatrix = m_defaultTransitionMatrix,
+           std::array<std::array<float, 4>, 4> t_transitionMatrix = c_defaultTransitionMatrix,
            int64_t t_maxMemoryConsumption = (int64_t)1024 * 1024 * 1024 * 2 /* 1024 Mb */,
            uint64_t t_xorshiftSeed = 0x133796A5FF21B3C1)
         : m_bmState(t_bmState)
@@ -165,7 +165,7 @@ private:
     std::array<std::array<float, 4>, 4> m_transitionMatrix;
 
     //! @brief Default transition matrix
-    static constexpr std::array<std::array<float, 4>, 4> m_defaultTransitionMatrix{
+    static constexpr std::array<std::array<float, 4>, 4> c_defaultTransitionMatrix{
         std::array<float, 4>{ 0.15, 0.0, 0.0, 0.85 },   // AllocateSingle
         std::array<float, 4>{ 0.65, 0.0, 0.35, 0.0 },   // DeallocateSingle
         std::array<float, 4>{ 0.0, 0.82, 0.0, 0.18 },   // AllocateMultiple

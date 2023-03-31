@@ -1,1 +1,0 @@
-// Check speed of memory allocation using gcptr
